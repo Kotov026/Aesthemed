@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AESTHEMED — эксклюзивный дистрибьютор инновационных инъекционных препаратов и космецевтики для профессионалов Казахстана">
+<title>AESTHEMED — Искусство эстетической медицины</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --w:#FAFAF8; --pearl:#F2EDE4; --g:#2C2B28;
+  --gm:#5E5C58; --gs:#9B9790;
+  --gold:#C9A96E; --gl:#E8D5B0; --card:#FFFFFF; --dk:#1C1B18;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--w);color:var(--g);overflow-x:hidden}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer}
+a{text-decoration:none}
+
+/* ═══════════════════════════════════════════
+   SHARED
+═══════════════════════════════════════════ */
+.eyebrow{display:flex;align-items:center;gap:14px}
+.ey-l{height:.5px;background:var(--gold);flex-shrink:0}
+.ey-t{font-size:.62rem;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+.ssep{position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(to right,transparent,rgba(201,169,110,.28),transparent);pointer-events:none}
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn-f{display:inline-block;padding:13px 36px;background:var(--g);color:var(--w);border:1px solid var(--g);font-size:.7rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.btn-f:hover{background:#1a1917;transform:translateY(-2px);box-shadow:0 10px 28px rgba(44,43,40,.2)}
+.btn-o{display:inline-block;padding:13px 36px;background:transparent;color:var(--g);border:1px solid rgba(44,43,40,.4);font-size:.7rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.btn-o:hover{background:var(--g);color:var(--w);border-color:var(--g);transform:translateY(-2px)}
+.btn-sm{padding:9px 20px;background:var(--g);color:var(--w);border:1px solid var(--g);font-size:.65rem;font-weight:500;letter-spacing:.13em;text-transform:uppercase;transition:all .3s}
+.btn-sm:hover{background:#1a1917}
+.btn-dk{padding:14px 44px;background:transparent;color:#F5F2EC;border:1px solid rgba(201,169,110,.45);font-size:.7rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.btn-dk:hover{background:var(--gold);color:var(--dk);border-color:var(--gold);transform:translateY(-2px)}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+.fu{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform .9s ease}
+.bi{opacity:0;filter:blur(10px);transform:translateY(22px);transition:opacity 1.2s ease,filter 1.2s ease,transform 1.2s ease}
+.sr{opacity:0;transform:translateX(26px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.sl{opacity:0;transform:translateX(-22px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.da{opacity:0;transform:translateY(20px);transition:opacity .9s ease,transform .9s ease}
+.fu.on,.bi.on{opacity:1;transform:translateY(0);filter:blur(0)}
+.sr.on{opacity:1;transform:translateX(0)}
+.sl.on{opacity:1;transform:translateX(0)}
+.da.on{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════════════
+   NAV — mobile first
+═══════════════════════════════════════════ */
+.nav{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:rgba(250,250,248,.94);backdrop-filter:blur(18px);border-bottom:.5px solid rgba(44,43,40,.07);transition:box-shadow .3s}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.lmark{width:18px;height:18px;border:1.5px solid var(--gold);transform:rotate(45deg);flex-shrink:0}
+.ltext{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase}
+.nav-d{display:none}
+.hamburger{display:flex;flex-direction:column;gap:5px;background:none;border:none;padding:6px}
+.hamburger span{display:block;width:22px;height:.5px;background:var(--g);transition:all .3s ease}
+.hamburger.open span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+
+/* Mobile nav */
+.mnav{position:fixed;inset:0;background:var(--w);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transform:translateY(-100%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.mnav.open{transform:translateY(0)}
+.mnav a{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:400;color:var(--g);transition:color .3s}
+.mnav a:hover{color:var(--gold)}
+.mnav-close{position:absolute;top:20px;right:20px;background:none;border:none;font-size:1.1rem;color:var(--g);padding:8px}
+
+/* ═══════════════════════════════════════════
+   HERO — mobile first
+═══════════════════════════════════════════ */
+@keyframes bgS{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes oF1{0%,100%{transform:translate(0,0)}40%{transform:translate(18px,-26px)}70%{transform:translate(-12px,12px)}}
+@keyframes oF2{0%,100%{transform:translate(0,0)}35%{transform:translate(-20px,16px)}70%{transform:translate(12px,-8px)}}
+@keyframes sP{0%{transform:scaleY(0);transform-origin:top;opacity:1}60%{transform:scaleY(1);transform-origin:top;opacity:1}100%{transform:scaleY(1);transform-origin:bottom;opacity:0}}
+
+.hero{width:100%;min-height:100svh;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#FAFAF8 0%,#F6EEE1 22%,#EFDFCC 48%,#F0E6D4 72%,#F7F0E6 88%,#FAFAF8 100%);background-size:300% 300%;animation:bgS 20s ease infinite}
+.orb{position:absolute;border-radius:50%;pointer-events:none}
+.o1{width:320px;height:320px;top:-8%;right:-8%;background:radial-gradient(circle,rgba(201,169,110,.13) 0%,transparent 65%);animation:oF1 16s ease-in-out infinite}
+.o2{width:200px;height:200px;bottom:4%;left:-6%;background:radial-gradient(circle,rgba(201,169,110,.1) 0%,transparent 65%);animation:oF2 22s ease-in-out infinite}
+.o3{display:none}
+.hline{position:absolute;top:50%;left:0;right:0;height:.5px;background:linear-gradient(to right,transparent,rgba(201,169,110,.15) 25%,rgba(201,169,110,.15) 75%,transparent);pointer-events:none}
+.hc{position:relative;z-index:10;max-width:820px;padding:40px 24px 80px}
+.h-ey{margin-bottom:1.8rem}
+.h1{font-family:'Playfair Display',serif;font-size:clamp(2.3rem,8vw,4.8rem);font-weight:500;letter-spacing:-.025em;line-height:1.1;margin-bottom:1.5rem}
+.h1 em{font-style:italic;color:var(--gold)}
+.hsub{font-size:clamp(.87rem,3vw,1.04rem);font-weight:300;color:#6B6862;line-height:1.9;max-width:560px;margin:0 auto 2.5rem}
+.hbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.si{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+.silbl{font-size:.57rem;letter-spacing:.24em;text-transform:uppercase;color:#B0A898}
+.sitrk{width:.5px;height:38px;background:linear-gradient(to bottom,var(--gold),transparent);animation:sP 2.2s ease-in-out infinite}
+
+/* ═══════════════════════════════════════════
+   ABOUT — mobile first
+═══════════════════════════════════════════ */
+.about{padding:80px 24px;background:var(--w);position:relative}
+.ab-grid{display:grid;grid-template-columns:1fr;gap:44px;max-width:1100px;margin:0 auto}
+.abh2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,6vw,2.9rem);font-weight:500;letter-spacing:-.02em;line-height:1.2;margin-bottom:1.4rem;margin-top:1.4rem}
+.abp{font-size:.93rem;font-weight:300;color:var(--gm);line-height:1.9;margin-bottom:2.4rem}
+.advs{display:flex;flex-direction:column}
+.ar{display:flex;align-items:flex-start;gap:14px;padding:15px 0;border-bottom:.5px solid rgba(44,43,40,.08)}
+.ar:first-child{border-top:.5px solid rgba(44,43,40,.08)}
+.aiw{width:34px;height:34px;border:.5px solid rgba(201,169,110,.45);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.aiw i{font-size:15px;color:var(--gold)}
+.atxt{font-size:.8rem;font-weight:500;letter-spacing:.02em;padding-top:8px}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bc{background:var(--card);border:.5px solid rgba(201,169,110,.22);padding:20px 22px}
+.bcw{grid-column:1/-1;border-left:2px solid var(--gold)}
+.bcf{grid-column:1/-1}
+.bcp{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bqlbl{font-size:.59rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:11px}
+.bq{font-family:'Playfair Display',serif;font-size:.97rem;font-style:italic;line-height:1.7}
+.sn{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:400;line-height:1;display:block}
+.sb{font-size:.7rem;font-weight:300;color:var(--gm);line-height:1.4;display:block;margin-top:4px}
+.crow{display:flex;align-items:center;flex-wrap:wrap}
+.ci{padding:7px 14px 7px 0;margin-right:14px;border-right:.5px solid rgba(44,43,40,.1)}
+.ci:last-child{border-right:none;margin-right:0}
+.cc{font-family:'Playfair Display',serif;font-size:1rem;font-weight:500;letter-spacing:.05em;display:block}
+.cn{font-size:.68rem;font-weight:300;color:var(--gm);display:block}
+.csub{font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gs);margin-top:8px;border-top:.5px solid rgba(44,43,40,.07);padding-top:8px}
+
+/* ═══════════════════════════════════════════
+   CATALOG — mobile first
+═══════════════════════════════════════════ */
+.catalog{padding:80px 24px;background:#F7F3EE;position:relative}
+.cat-in{max-width:1100px;margin:0 auto}
+.cat-hdr{text-align:center;margin-bottom:44px}
+.cat-ey{justify-content:center;margin-bottom:1.4rem}
+.cat-h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,6vw,3rem);font-weight:500;letter-spacing:-.02em}
+.tabs{display:flex;border-bottom:.5px solid rgba(44,43,40,.14);margin-bottom:34px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:12px 16px;background:transparent;border:none;border-bottom:2px solid transparent;margin-bottom:-.5px;font-size:.63rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--gs);transition:color .3s,border-color .3s;white-space:nowrap;text-align:left}
+.tnm{display:block}.tsub{display:none}
+.tab:hover{color:var(--gm)}
+.tab.act{color:var(--g);border-bottom-color:var(--gold);font-weight:500}
+.pgrid{display:grid;grid-template-columns:1fr;gap:14px;min-height:260px}
+.pcard{background:var(--card);border:.5px solid rgba(201,169,110,.2);overflow:hidden;opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+.pcard.vis{opacity:1;transform:translateY(0)}
+.pcard:hover{box-shadow:0 12px 32px rgba(44,43,40,.1)}
+.pcard:hover .pim{transform:scale(1.04)}
+.pcard:hover .pbtn{opacity:1;transform:translateY(0)}
+.pimg{height:170px;position:relative;overflow:hidden}
+.pim{height:100%;width:100%;transition:transform .5s ease;display:flex;align-items:center;justify-content:center}
+.pbadge{position:absolute;top:11px;left:11px;padding:3px 8px;font-size:.55rem;font-weight:500;letter-spacing:.11em;text-transform:uppercase;background:rgba(250,250,248,.92);color:var(--gm);border:.5px solid rgba(201,169,110,.3)}
+.ring{position:absolute;top:50%;left:50%;pointer-events:none}
+.ring::before,.ring::after{content:'';position:absolute;border-radius:50%;border:.5px solid rgba(201,169,110,.22);top:50%;left:50%;transform:translate(-50%,-50%)}
+.ring::before{width:64px;height:64px}.ring::after{width:35px;height:35px}
+.vi-a{background:linear-gradient(135deg,#F8F4EE,#EDDFCC)}
+.vi-b{background:linear-gradient(135deg,#EEF2F7,#CDD8E3)}
+.vi-c{background:linear-gradient(135deg,#F2F0ED,#E0D8CE)}
+.vi-d{background:linear-gradient(135deg,#F5EEEF,#E4D3D5)}
+.vi-e{background:linear-gradient(135deg,#F5F0E0,#E8DABC)}
+.pbody{padding:15px 17px 17px}
+.pbr{font-size:.56rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+.pnm{font-family:'Playfair Display',serif;font-size:.97rem;font-weight:500;line-height:1.3;margin-bottom:6px}
+.pdesc{font-size:.73rem;font-weight:300;color:var(--gm);line-height:1.7;margin-bottom:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pfoot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pprice{font-size:.73rem;font-weight:400}
+.pbtn{padding:6px 11px;background:var(--g);color:var(--w);border:none;font-size:.57rem;font-weight:500;letter-spacing:.11em;text-transform:uppercase;opacity:0;transform:translateY(7px);transition:opacity .28s ease,transform .28s ease;white-space:nowrap;flex-shrink:0}
+.pbtn:hover{background:#1a1917}
+
+/* ═══════════════════════════════════════════
+   DARK SECTION — mobile first
+═══════════════════════════════════════════ */
+@keyframes dF1{0%,100%{transform:translate(0,0)}40%{transform:translate(22px,-30px)}75%{transform:translate(-14px,14px)}}
+@keyframes dF2{0%,100%{transform:translate(0,0)}50%{transform:translate(-24px,18px)}}
+
+.dark{padding:80px 24px;background:var(--dk);position:relative;overflow:hidden}
+.dark::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 55%,rgba(201,169,110,.06) 0%,transparent 45%),radial-gradient(ellipse at 78% 22%,rgba(201,169,110,.04) 0%,transparent 38%);pointer-events:none}
+.dorb{position:absolute;border-radius:50%;pointer-events:none}
+.do1{width:360px;height:360px;top:-90px;right:-70px;border:.5px solid rgba(201,169,110,.08);animation:dF1 24s ease-in-out infinite}
+.do2{width:200px;height:200px;bottom:-45px;left:-55px;border:.5px solid rgba(201,169,110,.06);animation:dF2 19s ease-in-out infinite}
+.dark-in{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+.dark-hdr{text-align:center;margin-bottom:52px}
+.dark-ey{justify-content:center;margin-bottom:1.8rem}
+.dark-ey .ey-l{background:rgba(201,169,110,.5)}
+.dark-ey .ey-t{color:rgba(201,169,110,.85)}
+.dark-h2{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,6vw,3.3rem);font-weight:500;color:#F5F2EC;letter-spacing:-.025em;line-height:1.15}
+.dark-h2 em{font-style:italic;color:var(--gold)}
+.dark-sub{font-size:.87rem;font-weight:300;color:rgba(245,242,236,.4);line-height:1.8;max-width:460px;margin:1.1rem auto 0}
+.agrid{display:grid;grid-template-columns:1fr}
+.aitem{padding:34px 0;border-bottom:.5px solid rgba(201,169,110,.1)}
+.aitem:last-child{border-bottom:none}
+.aline{width:28px;height:1.5px;background:var(--gold);margin-bottom:20px;transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.16,1,.3,1) .25s}
+.aitem.on .aline{transform:scaleX(1)}
+.aibox{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:.5px solid rgba(201,169,110,.25);margin-bottom:14px}
+.aibox i{font-size:16px;color:rgba(201,169,110,.7)}
+.anum{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:400;color:rgba(201,169,110,.28);line-height:1;display:block;margin-bottom:12px;font-style:italic}
+.atitle{font-size:1rem;font-weight:400;color:#F5F2EC;letter-spacing:.01em;margin-bottom:9px;line-height:1.35}
+.adesc{font-size:.79rem;font-weight:300;color:rgba(245,242,236,.4);line-height:1.85}
+.dark-cta{text-align:center;margin-top:52px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.dk-note{font-size:.7rem;color:rgba(245,242,236,.25);letter-spacing:.04em}
+
+/* ═══════════════════════════════════════════
+   CONTACT — mobile first
+═══════════════════════════════════════════ */
+.contact{padding:80px 24px;background:#FFFFFF;position:relative}
+.con-in{max-width:1100px;margin:0 auto}
+.con-hdr{text-align:center;margin-bottom:50px}
+.con-ey{justify-content:center;margin-bottom:1.5rem}
+.con-h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,6vw,3rem);font-weight:500;letter-spacing:-.02em;line-height:1.2;margin-bottom:1rem}
+.con-sub{font-size:.87rem;font-weight:300;color:var(--gm);line-height:1.8;max-width:480px;margin:0 auto}
+.con-grid{display:grid;grid-template-columns:1fr;gap:48px}
+
+/* Info */
+.cinfo{display:flex;flex-direction:column;gap:18px;order:2}
+.ci-row{display:flex;align-items:flex-start;gap:12px}
+.cii{width:34px;height:34px;border:.5px solid rgba(201,169,110,.35);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cii i{font-size:14px;color:var(--gold)}
+.cil{font-size:.57rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:2px}
+.civ{font-size:.81rem;font-weight:300;color:var(--gm);line-height:1.6}
+.csocl{display:flex;align-items:center;gap:7px;color:var(--g);font-size:.73rem;font-weight:400;margin-top:5px;padding-top:16px;border-top:.5px solid rgba(44,43,40,.08);transition:color .3s}
+.csocl:hover{color:var(--gold)}
+.csocl i{font-size:16px}
+
+/* Form */
+.cform-col{order:1}
+.cfield{position:relative;padding-top:14px;margin-bottom:26px}
+.cfield::after{content:'';position:absolute;bottom:0;left:0;width:0;height:.5px;background:var(--gold);transition:width .4s ease}
+.cfield:focus-within::after{width:100%}
+.cfield input,.cfield select{
+  width:100%;padding:10px 0;
+  border:none;border-bottom:.5px solid rgba(44,43,40,.18);
+  background:transparent;
+  font-family:'Inter',sans-serif;font-size:.88rem;font-weight:300;color:var(--g);
+  outline:none;-webkit-appearance:none;appearance:none;
+  transition:border-bottom-color .3s
+}
+.cfield input:focus,.cfield select:focus{border-bottom-color:transparent}
+.cfield label{position:absolute;top:24px;left:0;font-size:.86rem;font-weight:300;color:var(--gs);pointer-events:none;transition:all .25s ease}
+.cfield input:focus~label,
+.cfield input:not(:placeholder-shown)~label,
+.cfield.hv label{top:0;font-size:.57rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
+.sarr{position:absolute;right:0;bottom:9px;pointer-events:none;font-size:12px;color:var(--gs);transition:color .3s}
+.cfield:focus-within .sarr{color:var(--gold)}
+.fbtn{width:100%;padding:15px;background:var(--g);color:var(--w);border:none;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:500;letter-spacing:.17em;text-transform:uppercase;margin-top:6px;transition:all .35s cubic-bezier(.16,1,.3,1)}
+.fbtn:hover{background:#1a1917;transform:translateY(-1px);box-shadow:0 8px 24px rgba(44,43,40,.17)}
+.fpnote{font-size:.62rem;font-weight:300;color:var(--gs);text-align:center;margin-top:11px;letter-spacing:.02em}
+.fpnote a{color:var(--gold)}
+
+/* Success */
+.fsuccess{display:none;flex-direction:column;align-items:center;text-align:center;padding:50px 20px;gap:14px}
+.fsuccess.show{display:flex}
+.finner{transition:opacity .4s ease,transform .4s ease}
+.finner.out{opacity:0;transform:translateY(-10px);pointer-events:none}
+.sdiam{width:56px;height:56px;border:.5px solid var(--gold);transform:rotate(45deg);display:flex;align-items:center;justify-content:center}
+.sdiam::after{content:'';display:block;width:26px;height:26px;border:.5px solid rgba(201,169,110,.35)}
+.sh{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:500;margin-top:6px}
+.sp{font-size:.83rem;font-weight:300;color:var(--gm);line-height:1.7}
+.sc-el{opacity:0;transform:translateY(10px);transition:opacity .7s ease,transform .7s ease}
+.sc-el.on{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════════════
+   FOOTER — mobile first
+═══════════════════════════════════════════ */
+.footer{background:var(--dk);padding:50px 24px 28px}
+.footer-in{max-width:1100px;margin:0 auto}
+.ftop{display:grid;grid-template-columns:1fr;gap:28px;margin-bottom:30px}
+.flog{display:flex;align-items:center;gap:10px}
+.flog .lmark{border-color:rgba(201,169,110,.5)}
+.flog .ltext{color:#F5F2EC;font-size:.85rem}
+.fnav{display:flex;flex-wrap:wrap;gap:14px 20px}
+.fnav a{font-size:.66rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,242,236,.38);transition:color .3s}
+.fnav a:hover{color:var(--gold)}
+.fcol{display:flex;flex-direction:column;gap:6px}
+.fsocl{display:flex;align-items:center;gap:7px;color:rgba(245,242,236,.55);font-size:.73rem;font-weight:300;transition:color .3s}
+.fsocl:hover{color:var(--gold)}
+.fsocl i{font-size:15px}
+.fph{font-size:.78rem;font-weight:300;color:rgba(245,242,236,.5)}
+.fem{font-size:.72rem;font-weight:300;color:rgba(245,242,236,.32)}
+.fadr{font-size:.68rem;font-weight:300;color:rgba(245,242,236,.22);line-height:1.5}
+.fdiv{height:.5px;background:rgba(201,169,110,.1);margin-bottom:20px}
+.fbot{display:flex;flex-direction:column;gap:6px}
+.fcopy{font-size:.62rem;color:rgba(245,242,236,.2);letter-spacing:.05em}
+.fpp{font-size:.62rem;color:rgba(245,242,236,.2);cursor:pointer;transition:color .3s}
+.fpp:hover{color:rgba(245,242,236,.4)}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — 640px+
+═══════════════════════════════════════════ */
+@media(min-width:640px){
+  .nav{padding:20px 32px}
+  .about,.catalog,.dark,.contact{padding-left:32px;padding-right:32px}
+  .footer{padding-left:32px;padding-right:32px}
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+  .tsub{display:block;font-size:.56rem;font-weight:300;letter-spacing:.07em;margin-top:3px;opacity:.75}
+  .agrid{grid-template-columns:1fr 1fr}
+  .aitem{padding:36px 24px}
+  .aitem:nth-child(1),.aitem:nth-child(3){border-right:.5px solid rgba(201,169,110,.1);padding-left:0;padding-right:24px}
+  .aitem:nth-child(2),.aitem:nth-child(4){padding-left:24px;padding-right:0}
+  .aitem:nth-child(1),.aitem:nth-child(2){border-bottom:.5px solid rgba(201,169,110,.1)}
+  .aitem:nth-child(3),.aitem:nth-child(4){border-bottom:none}
+  .fbot{flex-direction:row;justify-content:space-between}
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — 1024px+
+═══════════════════════════════════════════ */
+@media(min-width:1024px){
+  .nav{padding:20px 56px}
+  .nav-d{display:flex;align-items:center;gap:28px}
+  .nl{display:flex;gap:28px;list-style:none}
+  .nl a{font-size:.68rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--g);transition:color .3s}
+  .nl a:hover{color:var(--gold)}
+  .nr{display:flex;align-items:center;gap:16px}
+  .nla{font-size:.68rem;color:var(--gs);letter-spacing:.07em}
+  .nsp{width:.5px;height:18px;background:rgba(44,43,40,.18)}
+  .hamburger{display:none}
+  .o3{display:block;width:160px;height:160px;top:28%;left:8%;background:radial-gradient(circle,rgba(232,213,176,.22) 0%,transparent 65%);animation:oF1 28s ease-in-out infinite reverse}
+  .about{padding:110px 56px}
+  .ab-grid{grid-template-columns:42% 1fr;gap:68px}
+  .catalog{padding:100px 56px}
+  .pgrid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .dark{padding:110px 56px}
+  .aitem:nth-child(1),.aitem:nth-child(3){padding-right:40px}
+  .aitem:nth-child(2),.aitem:nth-child(4){padding-left:40px}
+  .contact{padding:110px 56px}
+  .con-grid{grid-template-columns:34% 1fr;gap:72px}
+  .cinfo{order:1}
+  .cform-col{order:2}
+  .footer{padding:56px 56px 32px}
+  .ftop{grid-template-columns:auto 1fr auto;gap:40px;align-items:start}
+  .fcol{align-items:flex-end}
+  .fsocl{justify-content:flex-end}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ NAV ══════ -->
+<nav class="nav" id="nav">
+  <div class="nav-logo">
+    <div class="lmark" aria-hidden="true"></div>
+    <span class="ltext">AESTHEMED</span>
+  </div>
+  <div class="nav-d">
+    <ul class="nl" aria-label="Навигация">
+      <li><a href="#about">О нас</a></li>
+      <li><a href="#catalog">Каталог</a></li>
+      <li><a href="#advantages">Партнёрам</a></li>
+      <li><a href="#contact">Контакты</a></li>
+    </ul>
+    <div class="nr">
+      <span class="nla">KZ · EN</span>
+      <div class="nsp" aria-hidden="true"></div>
+      <button class="btn-sm">Войти</button>
+    </div>
+  </div>
+  <button class="hamburger" id="hbg" aria-label="Открыть меню" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mnav" id="mnav" role="dialog" aria-label="Мобильное меню">
+  <button class="mnav-close" id="mnav-close" aria-label="Закрыть">✕</button>
+  <a href="#about">О нас</a>
+  <a href="#catalog">Каталог</a>
+  <a href="#advantages">Партнёрам</a>
+  <a href="#contact">Контакты</a>
+  <button class="btn-f" style="margin-top:.5rem">Стать партнёром</button>
+</div>
+
+<!-- ══════ HERO ══════ -->
+<section class="hero" aria-label="Главный экран">
+  <div class="orb o1" aria-hidden="true"></div>
+  <div class="orb o2" aria-hidden="true"></div>
+  <div class="orb o3" aria-hidden="true"></div>
+  <div class="hline" aria-hidden="true"></div>
+  <div class="hc">
+    <div class="eyebrow h-ey fu" id="h0" style="justify-content:center">
+      <div class="ey-l" style="width:34px" aria-hidden="true"></div>
+      <span class="ey-t">Швейцария · Италия · Испания</span>
+      <div class="ey-l" style="width:34px" aria-hidden="true"></div>
+    </div>
+    <h1 class="h1 bi" id="h1"><em>Искусство</em><br>эстетической медицины</h1>
+    <p class="hsub bi" id="h2">Эксклюзивные дистрибьюторы инновационных инъекционных препаратов и космецевтики из Швейцарии, Италии и Испании для профессионалов Казахстана.</p>
+    <div class="hbtns fu" id="h3">
+      <button class="btn-f" onclick="document.querySelector('#catalog').scrollIntoView({behavior:'smooth'})">Открыть каталог</button>
+      <button class="btn-o" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">Стать партнёром</button>
+    </div>
+  </div>
+  <div class="si fu" id="h4">
+    <span class="silbl">Прокрутите</span>
+    <div class="sitrk" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ══════ ABOUT ══════ -->
+<section class="about" id="about" aria-label="О компании">
+  <div class="ssep" aria-hidden="true"></div>
+  <div class="ab-grid">
+    <div>
+      <div class="eyebrow sl anim" data-d="0" style="margin-bottom:1.6rem">
+        <div class="ey-l" style="width:34px" aria-hidden="true"></div><span class="ey-t">О компании</span>
+      </div>
+      <h2 class="abh2 sl anim" data-d="130">Выбор ведущих косметологов</h2>
+      <p class="abp sl anim" data-d="250">AESTHEMED — ваш надёжный проводник в мире передовой косметологии. Мы поставляем только сертифицированные, оригинальные препараты с доказанной клинической эффективностью. Наша миссия — дать врачам Казахстана лучшие инструменты для сохранения молодости и красоты их пациентов.</p>
+      <div class="advs">
+        <div class="ar sl anim" data-d="370"><div class="aiw" aria-hidden="true"><i class="ti ti-handshake"></i></div><p class="atxt">Прямые контракты с производителями</p></div>
+        <div class="ar sl anim" data-d="480"><div class="aiw" aria-hidden="true"><i class="ti ti-certificate"></i></div><p class="atxt">100% сертификация качества</p></div>
+        <div class="ar sl anim" data-d="590"><div class="aiw" aria-hidden="true"><i class="ti ti-school"></i></div><p class="atxt">Регулярные мастер-классы и обучение протоколам</p></div>
+      </div>
+    </div>
+    <div class="bento">
+      <div class="bc bcw sr anim" data-d="80"><div class="bqlbl">Наш принцип</div><p class="bq">«Только оригинальные препараты.<br>Только доказанная эффективность.<br>Только ваш результат.»</p></div>
+      <div class="bcp">
+        <div class="bc sr anim" data-d="200"><span class="sn">5+</span><span class="sb">лет на рынке Казахстана</span></div>
+        <div class="bc sr anim" data-d="300"><span class="sn">300+</span><span class="sb">врачей-партнёров</span></div>
+      </div>
+      <div class="bc bcf sr anim" data-d="400">
+        <div class="crow"><div class="ci"><span class="cc">CH</span><span class="cn">Швейцария</span></div><div class="ci"><span class="cc">IT</span><span class="cn">Италия</span></div><div class="ci"><span class="cc">ES</span><span class="cn">Испания</span></div></div>
+        <div class="csub">Страны-производители</div>
+      </div>
+      <div class="bcp">
+        <div class="bc sr anim" data-d="480"><span class="sn">50+</span><span class="sb">премиальных брендов</span></div>
+        <div class="bc sr anim" data-d="560"><span class="sn">100%</span><span class="sb">оригинальная продукция</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ CATALOG ══════ -->
+<section class="catalog" id="catalog" aria-label="Каталог">
+  <div class="ssep" aria-hidden="true"></div>
+  <div class="cat-in">
+    <div class="cat-hdr">
+      <div class="eyebrow cat-ey fu anim" data-d="0"><div class="ey-l" style="width:34px" aria-hidden="true"></div><span class="ey-t">Эксклюзивные бренды</span><div class="ey-l" style="width:34px" aria-hidden="true"></div></div>
+      <h2 class="cat-h2 fu anim" data-d="140">Наш портфель</h2>
+    </div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab act" data-brand="ELEMENTRE" role="tab" aria-selected="true"><span class="tnm">ELEMENTRE</span><span class="tsub">Швейцария · Космецевтика</span></button>
+      <button class="tab" data-brand="CREO" role="tab" aria-selected="false"><span class="tnm">CREO REGENERATE</span><span class="tsub">Италия · Инъекции</span></button>
+      <button class="tab" data-brand="AMINO" role="tab" aria-selected="false"><span class="tnm">AMINO SYSTEMS HA</span><span class="tsub">Испания</span></button>
+      <button class="tab" data-brand="БЮРЖОН" role="tab" aria-selected="false"><span class="tnm">Бюржон</span><span class="tsub">Турция</span></button>
+    </div>
+    <div class="pgrid" id="pgrid" role="list"></div>
+  </div>
+</section>
+
+<!-- ══════ DARK ADVANTAGES ══════ -->
+<section class="dark" id="advantages" aria-label="Преимущества для партнёров">
+  <div style="position:absolute;top:0;left:0;right:0;height:.5px;background:linear-gradient(to right,transparent,rgba(201,169,110,.15),transparent);z-index:3" aria-hidden="true"></div>
+  <div class="dorb do1" aria-hidden="true"></div>
+  <div class="dorb do2" aria-hidden="true"></div>
+  <div class="dark-in">
+    <div class="dark-hdr">
+      <div class="eyebrow dark-ey da anim" data-d="0"><div class="ey-l" style="width:34px" aria-hidden="true"></div><span class="ey-t">Для врачей и клиник</span><div class="ey-l" style="width:34px" aria-hidden="true"></div></div>
+      <h2 class="dark-h2 da anim" data-d="160">Ваш бизнес<br><em>на новом уровне.</em></h2>
+      <p class="dark-sub da anim" data-d="300">Работая с AESTHEMED, вы получаете не просто препараты — вы получаете полноценную экосистему поддержки.</p>
+    </div>
+    <div class="agrid">
+      <div class="aitem da anim" data-d="200"><div class="aibox" aria-hidden="true"><i class="ti ti-tag"></i></div><div class="aline" aria-hidden="true"></div><span class="anum">01</span><h3 class="atitle">Закрытые оптовые цены</h3><p class="adesc">Защищённый доступ к оптовым прайсам с первого заказа. Специальные условия для постоянных партнёров и объёмных закупок.</p></div>
+      <div class="aitem da anim" data-d="320"><div class="aibox" aria-hidden="true"><i class="ti ti-speakerphone"></i></div><div class="aline" aria-hidden="true"></div><span class="anum">02</span><h3 class="atitle">Маркетинговая поддержка</h3><p class="adesc">Брендинговые материалы, SMM-контент и совместное продвижение для привлечения пациентов в вашу клинику.</p></div>
+      <div class="aitem da anim" data-d="440"><div class="aibox" aria-hidden="true"><i class="ti ti-truck-delivery"></i></div><div class="aline" aria-hidden="true"></div><span class="anum">03</span><h3 class="atitle">Быстрая логистика по Казахстану</h3><p class="adesc">Доставка в Алматы, Астану и все регионы. Складской резерв гарантирует наличие препаратов.</p></div>
+      <div class="aitem da anim" data-d="560"><div class="aibox" aria-hidden="true"><i class="ti ti-award"></i></div><div class="aline" aria-hidden="true"></div><span class="anum">04</span><h3 class="atitle">Обучение от международных спикеров</h3><p class="adesc">Мастер-классы, воркшопы и сертификационные программы от ведущих экспертов из Европы и Азии.</p></div>
+    </div>
+    <div class="dark-cta da anim" data-d="720">
+      <button class="btn-dk" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">Стать партнёром</button>
+      <span class="dk-note">Регистрация бесплатна · Ответим в течение 24 ч</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ CONTACT ══════ -->
+<section class="contact" id="contact" aria-label="Форма заявки">
+  <div class="ssep" aria-hidden="true"></div>
+  <div class="con-in">
+    <div class="con-hdr">
+      <div class="eyebrow con-ey fu anim" data-d="0"><div class="ey-l" style="width:34px" aria-hidden="true"></div><span class="ey-t">Стать партнёром</span><div class="ey-l" style="width:34px" aria-hidden="true"></div></div>
+      <h2 class="con-h2 fu anim" data-d="140">Начать сотрудничество.</h2>
+      <p class="con-sub fu anim" data-d="260">Оставьте заявку, чтобы получить закрытый прайс для специалистов и доступ к полному каталогу.</p>
+    </div>
+    <div class="con-grid">
+      <!-- Info -->
+      <div class="cinfo fu anim" data-d="180">
+        <div class="ci-row"><div class="cii" aria-hidden="true"><i class="ti ti-map-pin"></i></div><div><span class="cil">Адрес</span><span class="civ">г. Алматы,<br>ул. Кабанбай батыра, 53</span></div></div>
+        <div class="ci-row"><div class="cii" aria-hidden="true"><i class="ti ti-phone"></i></div><div><span class="cil">Телефон</span><span class="civ">+7 (727) 000-00-00</span></div></div>
+        <div class="ci-row"><div class="cii" aria-hidden="true"><i class="ti ti-mail"></i></div><div><span class="cil">Email</span><span class="civ">info@aesthemed.kz</span></div></div>
+        <a href="https://instagram.com" class="csocl" target="_blank" rel="noopener"><i class="ti ti-brand-instagram" aria-hidden="true"></i>@aesthemed.kz</a>
+      </div>
+      <!-- Form -->
+      <div class="cform-col fu anim" data-d="300">
+        <div class="finner" id="finner">
+          <form id="cform" novalidate>
+            <div class="cfield"><input type="text" id="fn" placeholder=" " autocomplete="name" required><label for="fn">Имя и фамилия</label></div>
+            <div class="cfield"><input type="tel" id="fp" placeholder=" " maxlength="18" autocomplete="tel" required><label for="fp">Телефон</label></div>
+            <div class="cfield"><input type="text" id="fc" placeholder=" " autocomplete="address-level2"><label for="fc">Город</label></div>
+            <div class="cfield" id="sfield">
+              <select id="fspec" required>
+                <option value="" disabled selected></option>
+                <option value="doctor">Врач / Косметолог</option>
+                <option value="owner">Владелец клиники</option>
+                <option value="manager">Управляющий клиникой</option>
+                <option value="other">Другое</option>
+              </select>
+              <label for="fspec">Специализация</label>
+              <div class="sarr" aria-hidden="true"><i class="ti ti-chevron-down"></i></div>
+            </div>
+            <button type="submit" class="fbtn">Получить прайс</button>
+            <p class="fpnote">Нажимая кнопку, вы соглашаетесь с <a href="#">политикой конфиденциальности</a></p>
+          </form>
+        </div>
+        <div class="fsuccess" id="fsuccess" role="alert" aria-live="polite">
+          <div class="sdiam sc-el" aria-hidden="true"></div>
+          <h3 class="sh sc-el">Заявка принята</h3>
+          <p class="sp sc-el">Мы свяжемся с вами в течение 24 часов.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FOOTER ══════ -->
+<footer class="footer" role="contentinfo">
+  <div class="footer-in">
+    <div class="ftop">
+      <div class="flog"><div class="lmark" aria-hidden="true"></div><span class="ltext">AESTHEMED</span></div>
+      <nav class="fnav" aria-label="Навигация в футере">
+        <a href="#about">О компании</a><a href="#catalog">Каталог</a>
+        <a href="#advantages">Партнёрам</a><a href="#contact">Контакты</a><a href="#">Обучение</a>
+      </nav>
+      <div class="fcol">
+        <a href="https://instagram.com" class="fsocl" target="_blank" rel="noopener"><i class="ti ti-brand-instagram" aria-hidden="true"></i>@aesthemed.kz</a>
+        <div class="fph">+7 (727) 000-00-00</div>
+        <div class="fem">info@aesthemed.kz</div>
+        <div class="fadr">г. Алматы, ул. Кабанбай батыра, 53</div>
+      </div>
+    </div>
+    <div class="fdiv" aria-hidden="true"></div>
+    <div class="fbot">
+      <span class="fcopy">© 2025 AESTHEMED. Все права защищены.</span>
+      <a href="#" class="fpp">Политика конфиденциальности</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ══════════════════════════════════════════
+   MOCK DATA — 10 SKU (расширьте до 50-100)
+   Добавляйте объекты в массив PRODUCTS.
+   Поле brand должно совпадать с data-brand на кнопке таба.
+══════════════════════════════════════════ */
+const PRODUCTS=[
+  {id:1,name:"Hydra Boost Complex",brand:"ELEMENTRE",bl:"ELEMENTRE · CH",cat:"Увлажнение",desc:"Интенсивный серум с гиалуроновой кислотой тройного молекулярного веса. Глубокое увлажнение 72 ч, восстановление барьерной функции кожи.",price:"По запросу",vi:"vi-a"},
+  {id:2,name:"Retinol Intensive Night",brand:"ELEMENTRE",bl:"ELEMENTRE · CH",cat:"Антивозрастной",desc:"Ночной комплекс с инкапсулированным ретинолом 0.5% и нейропептидами. Клинически доказанная стимуляция коллагена I типа.",price:"По запросу",vi:"vi-e"},
+  {id:3,name:"Vitamin C Brightening 20%",brand:"ELEMENTRE",bl:"ELEMENTRE · CH",cat:"Осветление",desc:"Стабилизированный витамин C 20% + феруловая кислота + витамин E. Антиоксидантная защита и выравнивание тона.",price:"По запросу",vi:"vi-a"},
+  {id:4,name:"Nucleofill Strong PN",brand:"CREO",bl:"CREO REGENERATE · IT",cat:"Биоревитализация",desc:"Полинуклеотиды высокой концентрации для глубокой регенерации дермы и стимуляции фибробластов.",price:"По запросу",vi:"vi-b"},
+  {id:5,name:"Contour Lip Volume HA",brand:"CREO",bl:"CREO REGENERATE · IT",cat:"Lip Enhancement",desc:"Нетоксичный гиалуроновый филлер для губ. Натуральный объём и чёткий контур. Результат до 12 мес.",price:"По запросу",vi:"vi-d"},
+  {id:6,name:"Meso Cocktail 18 AA",brand:"CREO",bl:"CREO REGENERATE · IT",cat:"Мезотерапия",desc:"18 аминокислот, витамины группы B, коэнзимы и низкомолекулярная ГК в одной ампуле.",price:"По запросу",vi:"vi-c"},
+  {id:7,name:"HA Booster 2.5%",brand:"AMINO",bl:"AMINO SYSTEMS · ES",cat:"Биоревитализация",desc:"Инъекционный гиалуронат натрия 2.5% с комплексом аминокислот. Лифтинг и увлажнение после 1 процедуры.",price:"По запросу",vi:"vi-b"},
+  {id:8,name:"Amino Lift Cocktail Pro",brand:"AMINO",bl:"AMINO SYSTEMS · ES",cat:"Мезотерапия",desc:"32 нутриента в одной ампуле: аминокислоты, витамины, коэнзимы. Клинически доказанный эффект.",price:"По запросу",vi:"vi-c"},
+  {id:9,name:"Botulax Premium 100U",brand:"БЮРЖОН",bl:"БЮРЖОН · TR",cat:"Ботулотоксин",desc:"Высокоочищенный ботулотоксин типа A, 100 ЕД. Мягкая релаксация мышц, минимальный период восстановления.",price:"По запросу",vi:"vi-c"},
+  {id:10,name:"Filler Dense HA 24 мг",brand:"БЮРЖОН",bl:"БЮРЖОН · TR",cat:"Контурная пластика",desc:"Плотный гиалуроновый филлер 24 мг/мл для коррекции глубоких складок, скул и подбородка. До 18 мес.",price:"По запросу",vi:"vi-e"},
+];
+
+/* ══ HERO ══ */
+[{id:'h0',d:110},{id:'h1',d:400},{id:'h2',d:720},{id:'h3',d:1040},{id:'h4',d:1560}].forEach(function(s){
+  setTimeout(function(){var e=document.getElementById(s.id);if(e)e.classList.add('on');},s.d);
+});
+
+/* ══ INTERSECTION OBSERVER ══ */
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){
+      var el=en.target,d=parseInt(el.dataset.d||0);
+      setTimeout(function(){el.classList.add('on');},d);
+      obs.unobserve(el);
+    }
+  });
+},{threshold:0.1});
+document.querySelectorAll('.anim').forEach(function(el){obs.observe(el);});
+
+/* ══ CATALOG TABS ══ */
+var curBrand='ELEMENTRE';
+function renderProducts(brand,anim){
+  var grid=document.getElementById('pgrid');
+  var items=PRODUCTS.filter(function(p){return p.brand===brand;});
+  function draw(){
+    grid.innerHTML=items.map(function(p){
+      return'<div class="pcard" role="listitem"><div class="pimg"><div class="pim '+p.vi+'"><div class="ring" aria-hidden="true"></div></div><span class="pbadge">'+p.cat+'</span></div><div class="pbody"><p class="pbr">'+p.bl+'</p><h3 class="pnm">'+p.name+'</h3><p class="pdesc">'+p.desc+'</p><div class="pfoot"><span class="pprice">'+p.price+'</span><button class="pbtn">Узнать цену</button></div></div></div>';
+    }).join('');
+    document.querySelectorAll('.pcard').forEach(function(c,i){setTimeout(function(){c.classList.add('vis');},i*90);});
+  }
+  if(anim){document.querySelectorAll('.pcard').forEach(function(c){c.classList.remove('vis');});setTimeout(draw,250);}
+  else draw();
+}
+document.getElementById('tabs').addEventListener('click',function(e){
+  var t=e.target.closest('.tab');
+  if(!t||t.dataset.brand===curBrand)return;
+  document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('act');x.setAttribute('aria-selected','false');});
+  t.classList.add('act');t.setAttribute('aria-selected','true');
+  curBrand=t.dataset.brand;renderProducts(curBrand,true);
+});
+renderProducts('ELEMENTRE',false);
+
+/* ══ PHONE MASK +7 Kazakhstan ══ */
+var fp=document.getElementById('fp');
+fp.addEventListener('focus',function(){if(!this.value)this.value='+7 (';});
+fp.addEventListener('input',function(){
+  var v=this.value.replace(/\D/g,'');
+  if(v.startsWith('7')||v.startsWith('8'))v=v.slice(1);
+  v=v.slice(0,10);
+  var o='+7';
+  if(v.length>0)o+=' ('+v.slice(0,3);
+  if(v.length>=3)o+=') '+v.slice(3,6);
+  if(v.length>=6)o+='-'+v.slice(6,8);
+  if(v.length>=8)o+='-'+v.slice(8,10);
+  this.value=o;
+});
+fp.addEventListener('keydown',function(e){if(e.key==='Backspace'&&(this.value==='+7 ('||this.value==='+7')){e.preventDefault();this.value='';}});
+fp.addEventListener('blur',function(){if(this.value==='+7 ('||this.value==='+7')this.value='';});
+
+/* ══ SELECT FLOATING LABEL ══ */
+var fspec=document.getElementById('fspec'),sfield=document.getElementById('sfield');
+fspec.addEventListener('change',function(){this.value?sfield.classList.add('hv'):sfield.classList.remove('hv');});
+
+/* ══ FORM SUBMIT ══ */
+document.getElementById('cform').addEventListener('submit',function(e){
+  e.preventDefault();
+  var inner=document.getElementById('finner');
+  inner.classList.add('out');
+  setTimeout(function(){
+    inner.style.display='none';
+    var succ=document.getElementById('fsuccess');
+    succ.classList.add('show');
+    succ.querySelectorAll('.sc-el').forEach(function(el,i){setTimeout(function(){el.classList.add('on');},i*150+60);});
+  },420);
+});
+
+/* ══ HAMBURGER MENU ══ */
+var hbg=document.getElementById('hbg'),mnav=document.getElementById('mnav'),mc=document.getElementById('mnav-close');
+function openM(){mnav.classList.add('open');hbg.classList.add('open');hbg.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';}
+function closeM(){mnav.classList.remove('open');hbg.classList.remove('open');hbg.setAttribute('aria-expanded','false');document.body.style.overflow='';}
+hbg.addEventListener('click',openM);
+mc.addEventListener('click',closeM);
+mnav.querySelectorAll('a,button').forEach(function(a){a.addEventListener('click',closeM);});
+
+/* ══ NAV SCROLL STATE ══ */
+window.addEventListener('scroll',function(){
+  document.getElementById('nav').style.boxShadow=window.scrollY>40?'0 2px 18px rgba(44,43,40,.08)':'none';
+},{passive:true});
+</script>
+</body>
+</html>
