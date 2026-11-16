@@ -54,6 +54,7 @@ function inviteText(): string {
 *LOTOS United* приглашает косметологов на практический семинар *«Современные препараты в арсенале косметолога»*
 ${almatyOpen() ? "📍 Алматы — 25 ноября · Шымкент — 30 ноября" : "📍 Шымкент — 30 ноября"}
 
+Отправьте цифру:
 *1* — Подробнее
 *2* — Записаться
 
@@ -63,6 +64,7 @@ ${pick(GREETINGS_KZ)} 🌸
 *LOTOS United* косметологтарды *«Косметолог арсеналындағы заманауи препараттар»* практикалық семинарына шақырады
 ${almatyOpen() ? "📍 Алматы — 25 қараша · Шымкент — 30 қараша" : "📍 Шымкент — 30 қараша"}
 
+Цифрды жіберіңіз:
 *1* — Толығырақ
 *2* — Жазылу
 
@@ -97,6 +99,7 @@ const DETAILS_RU = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТ
 
 Количество мест ограничено!
 
+Отправьте цифру:
 *2* — Записаться
 *3* — Задать вопрос`;
 
@@ -122,6 +125,7 @@ const DETAILS_KZ = `*КОСМЕТОЛОГТАРҒА АРНАЛҒАН ПРАКТ�
 
 Орын саны шектеулі!
 
+Цифрды жіберіңіз:
 *2* — Жазылу
 *3* — Сұрақ қою`;
 
@@ -402,7 +406,7 @@ async function aiHandle(c: any, phone: string, raw: string, upd: Record<string, 
       }
       await db.from("contacts").update({ ...upd, status: "lead", city }).eq("phone", phone);
       await sendWa(phone, THANKS);
-      await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS (${city === "Алматы" ? "25.11" : "30.11"})\n${card({ ...who, city })}\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
+      await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS (${city === "Алматы" ? "25.11" : "30.11"})\n${card({ ...who, city })}\n\nСообщение клиента: «${raw}»\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
       return true;
     }
 
@@ -534,7 +538,7 @@ async function incoming(body: any) {
       await db.from("contacts").update({ ...upd, status: "lead", city }).eq("phone", phone);
       await sendWa(phone, THANKS);
       const date = city === "Алматы" ? " (25.11)" : " (30.11)";
-      await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS${date}\n${card({ ...who, city })}\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
+      await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS${date}\n${card({ ...who, city })}\n\nСообщение клиента: «${raw}»\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
       return;
     }
 
