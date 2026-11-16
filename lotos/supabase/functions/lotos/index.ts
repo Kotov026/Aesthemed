@@ -443,8 +443,8 @@ async function incoming(body: any) {
   const phone = chatId.replace("@c.us", "");
   const name: string | null = body.senderData?.senderName || body.senderData?.chatName || null;
   const md = body.messageData ?? {};
-  let raw: string = md.textMessageData?.textMessage ?? md.extendedTextMessageData?.text ??
-    md.fileMessageData?.caption || `[${md.typeMessage ?? "сообщение"}]`;
+  let raw: string = (md.textMessageData?.textMessage ?? md.extendedTextMessageData?.text ??
+    md.fileMessageData?.caption) || `[${md.typeMessage ?? "сообщение"}]`;
   // voice message -> text (OpenAI speech-to-text), then handled like a normal message
   if (md.typeMessage === "audioMessage" && md.fileMessageData?.downloadUrl && OPENAI_KEY) {
     const text = await transcribe(md.fileMessageData.downloadUrl).catch(async (e) => {
