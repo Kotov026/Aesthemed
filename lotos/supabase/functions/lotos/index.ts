@@ -61,7 +61,7 @@ ${pick(GREETINGS_KZ)} 🌸
 
 const POSTER_BASE = "https://raw.githubusercontent.com/Kotov026/Aesthemed/claude/laughing-fermat-8qvjuv/lotos/assets/";
 const POSTERS = [
-  { file: "poster-almaty-v2.jpg", caption: "📍 Алматы — 25 ноября / 25 қараша" },
+  { file: "poster-almaty-v3.jpg", caption: "📍 Алматы — 25 ноября / 25 қараша" },
   { file: "poster-shymkent-v2.jpg", caption: "📍 Шымкент — 30 ноября / 30 қараша" },
 ];
 
