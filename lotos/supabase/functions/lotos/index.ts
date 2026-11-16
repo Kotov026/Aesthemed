@@ -5,7 +5,7 @@
 //   POST ?key=...&action=setup  — points the Green API instance webhook at this function
 //   POST ?key=...               — Green API webhook (incoming WhatsApp messages)
 //
-// Secrets (Supabase → Edge Functions → Secrets):
+// Credentials (Edge Function secrets or rows in public.settings with the same key):
 //   GREEN_API_URL   e.g. https://7103.api.greenapi.com
 //   GREEN_ID        idInstance
 //   GREEN_TOKEN     apiTokenInstance
@@ -18,10 +18,18 @@ const db = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-const GREEN_URL = (Deno.env.get("GREEN_API_URL") ?? "").replace(/\/$/, "");
-const GREEN_ID = Deno.env.get("GREEN_ID") ?? "";
-const GREEN_TOKEN = Deno.env.get("GREEN_TOKEN") ?? "";
-const TG_TOKEN = Deno.env.get("TG_BOT_TOKEN") ?? "";
+// Credentials: Edge Function secrets, or the same names in the private `settings` table.
+let GREEN_URL = "", GREEN_ID = "", GREEN_TOKEN = "", TG_TOKEN = "";
+async function loadConfig() {
+  const { data } = await db.from("settings").select("key,value")
+    .in("key", ["GREEN_API_URL", "GREEN_ID", "GREEN_TOKEN", "TG_BOT_TOKEN"]);
+  const s = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
+  const get = (k: string) => (Deno.env.get(k) || s[k] || "").trim();
+  GREEN_URL = get("GREEN_API_URL").replace(/\/$/, "");
+  GREEN_ID = get("GREEN_ID");
+  GREEN_TOKEN = get("GREEN_TOKEN");
+  TG_TOKEN = get("TG_BOT_TOKEN");
+}
 
 // ---------------------------------------------------------------- texts
 
@@ -289,6 +297,7 @@ Deno.serve(async (req) => {
 
   const action = url.searchParams.get("action");
   try {
+    await loadConfig();
     if (action === "tick") {
       // answer pg_net right away, do the work in the background
       // @ts-ignore EdgeRuntime is provided by Supabase
