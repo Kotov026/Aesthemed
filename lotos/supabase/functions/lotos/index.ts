@@ -59,8 +59,11 @@ ${pick(GREETINGS_KZ)} 🌸
 Не получать сообщения / Хабарлама алмау: *СТОП*`;
 }
 
-const POSTER_URL = "https://raw.githubusercontent.com/Kotov026/Aesthemed/claude/laughing-fermat-8qvjuv/lotos/assets/poster-almaty.jpg";
-const POSTER_CAPTION = "LOTOS United · Алматы 25.11 · Шымкент 30.11";
+const POSTER_BASE = "https://raw.githubusercontent.com/Kotov026/Aesthemed/claude/laughing-fermat-8qvjuv/lotos/assets/";
+const POSTERS = [
+  { file: "poster-almaty-v2.jpg", caption: "📍 Алматы — 25 ноября / 25 қараша" },
+  { file: "poster-shymkent-v2.jpg", caption: "📍 Шымкент — 30 ноября / 30 қараша" },
+];
 
 const DETAILS = `*Практический семинар для косметологов*
 *«Современные препараты в арсенале косметолога»*
@@ -80,6 +83,9 @@ const DETAILS = `*Практический семинар для космето�
 📍 Шымкент — 30 ноября
 💰 Стоимость: *20 000 ₸*
 Количество мест ограничено!
+
+📞 +7 705 813 72 60
+📷 Instagram: irina.aesthetic.kz
 
 ———
 
@@ -101,6 +107,9 @@ const DETAILS = `*Практический семинар для космето�
 📍 Шымкент — 30 қараша
 💰 Құны: *20 000 ₸*
 Орын саны шектеулі!
+
+📞 +7 705 813 72 60
+📷 Instagram: irina.aesthetic.kz
 
 ———
 
@@ -286,8 +295,10 @@ async function incoming(body: any) {
     case "failed":
       if (isDetails(t)) {
         await db.from("contacts").update(upd).eq("phone", phone);
-        await green("sendFileByUrl", { chatId: `${phone}@c.us`, urlFile: POSTER_URL, fileName: "lotos-seminar.jpg", caption: POSTER_CAPTION })
-          .catch((e) => log(phone, "error", "poster: " + String(e)));
+        for (const p of POSTERS) {
+          await green("sendFileByUrl", { chatId: `${phone}@c.us`, urlFile: POSTER_BASE + p.file, fileName: p.file, caption: p.caption })
+            .catch((e) => log(phone, "error", "poster: " + String(e)));
+        }
         await sendWa(phone, DETAILS);
       } else if (isYes(t)) {
         await db.from("contacts").update({ ...upd, status: "asked_city" }).eq("phone", phone);
