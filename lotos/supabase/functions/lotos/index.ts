@@ -1,8 +1,10 @@
 // LOTOS United — WhatsApp invite bot (Green API) + Telegram notifications to the manager.
 //
-// One function, three entry points (all require ?key=<settings.access_key>):
+// One function, several entry points (all require ?key=<settings.access_key>):
 //   POST ?key=...&action=tick   — called by pg_cron; sends at most one invite per call
 //   POST ?key=...&action=setup  — points the Green API instance webhook at this function
+//   POST ?key=...&action=report — sends statistics to the manager (pg_cron, twice a day)
+//   POST ?key=...&action=tg     — Telegram webhook: /stats, /pause, /resume from the manager
 //   POST ?key=...               — Green API webhook (incoming WhatsApp messages)
 //
 // Credentials (Edge Function secrets or rows in public.settings with the same key):
@@ -226,10 +228,18 @@ async function tick() {
     }
     await sendWa(c.phone, inviteText());
     await db.from("contacts").update({ status: "sent", sent_at: new Date().toISOString() }).eq("phone", c.phone);
+    await setSetting("fail_streak", "0");
     return `sent to ${c.phone}`;
   } catch (e) {
     await db.from("contacts").update({ status: "failed", last_text: String(e).slice(0, 300) }).eq("phone", c.phone);
     await log(c.phone, "error", String(e));
+    const streak = Number(await setting("fail_streak") ?? 0) + 1;
+    await setSetting("fail_streak", String(streak));
+    if (streak >= 3) {
+      await setSetting("paused", "true");
+      const st = await waState();
+      await notifyManager(`🚨 Рассылка LOTOS остановлена: ${streak} ошибки отправки подряд.\nWhatsApp: ${st}\nПоследняя ошибка: ${String(e).slice(0, 200)}\n\nПроверьте телефон с номером бота и Green API, затем отправьте /resume`);
+    }
     return `error ${c.phone}`;
   }
 }
@@ -314,6 +324,90 @@ async function incoming(body: any) {
   }
 }
 
+// ---------------------------------------------------------------- monitoring
+
+const STATE_RU: Record<string, string> = {
+  authorized: "✅ подключён",
+  notAuthorized: "❌ НЕ подключён — отсканируйте QR в Green API",
+  blocked: "⛔ номер ЗАБЛОКИРОВАН WhatsApp",
+  sleepMode: "⚠️ телефон не в сети",
+  starting: "⏳ запускается",
+  yellowCard: "⚠️ предупреждение WhatsApp (жёлтая карточка) — снизьте лимит",
+};
+
+async function waState(): Promise<string> {
+  try {
+    const r = await fetch(`${GREEN_URL}/waInstance${GREEN_ID}/getStateInstance/${GREEN_TOKEN}`).then((r) => r.json());
+    return STATE_RU[r.stateInstance] ?? String(r.stateInstance);
+  } catch (e) {
+    return "❌ Green API не отвечает: " + String(e).slice(0, 100);
+  }
+}
+
+async function statsText(title: string): Promise<string> {
+  const { midnightUtc } = almatyNow();
+  const since = midnightUtc.toISOString();
+  const cnt = async (q: any) => (await q).count ?? 0;
+  const head = () => db.from("contacts").select("phone", { count: "exact", head: true });
+  const sentToday = await cnt(head().gte("sent_at", since));
+  const repliedToday = await cnt(head().gte("replied_at", since));
+  const leadsToday = await cnt(head().eq("status", "lead").gte("replied_at", since));
+  const queue = await cnt(head().eq("status", "new"));
+  const sentAll = await cnt(head().not("sent_at", "is", null));
+  const leadsAll = await cnt(head().eq("status", "lead"));
+  const stops = await cnt(head().eq("status", "stop"));
+  const failed = await cnt(head().eq("status", "failed"));
+  const errorsToday = (await db.from("log").select("id", { count: "exact", head: true })
+    .eq("direction", "error").gte("at", since)).count ?? 0;
+  const { data: leads } = await db.from("contacts").select("city").eq("status", "lead");
+  const byCity: Record<string, number> = {};
+  for (const l of leads ?? []) byCity[l.city || "—"] = (byCity[l.city || "—"] ?? 0) + 1;
+  const cities = Object.entries(byCity).map(([c, n]) => `${c}: ${n}`).join(", ") || "—";
+  const paused = (await setting("paused")) === "true";
+  const limit = await setting("daily_limit") ?? "40";
+  const days = Math.ceil(queue / Math.max(1, Number(limit)));
+  return `${title}
+
+Сегодня:
+📤 Отправлено: ${sentToday} из ${limit}
+💬 Ответили: ${repliedToday}
+🆕 Записались: ${leadsToday}
+
+Всего:
+📤 Отправлено: ${sentAll}
+🆕 Заявок: ${leadsAll} (${cities})
+🚫 Отписались: ${stops}
+⚠️ Не доставлено: ${failed}
+📋 В очереди: ${queue} (~${days} дн.)
+
+WhatsApp: ${await waState()}
+Рассылка: ${paused ? "⏸ НА ПАУЗЕ (/resume — продолжить)" : "▶️ идёт"}
+Ошибок сегодня: ${errorsToday}`;
+}
+
+// Telegram commands from the manager chat
+async function telegram(update: any) {
+  const msg = update.message;
+  if (!msg?.text) return;
+  const chat = String(msg.chat.id);
+  const manager = await managerChat();
+  const cmd = msg.text.trim().split(/[\s@]/)[0].toLowerCase();
+  if (!manager && cmd === "/start") {
+    await setSetting("tg_chat_id", chat); // first /start becomes the manager
+  } else if (manager !== chat) {
+    return; // ignore strangers
+  }
+  if (cmd === "/stats" || cmd === "/start") await notifyManager(await statsText("📊 Статистика LOTOS"));
+  else if (cmd === "/pause") {
+    await setSetting("paused", "true");
+    await notifyManager("⏸ Рассылка на паузе. /resume — продолжить.");
+  } else if (cmd === "/resume") {
+    await setSetting("paused", "false");
+    await setSetting("fail_streak", "0");
+    await notifyManager(`▶️ Рассылка продолжается.\nWhatsApp: ${await waState()}`);
+  } else await notifyManager("Команды:\n/stats — статистика\n/pause — остановить рассылку\n/resume — продолжить");
+}
+
 // ---------------------------------------------------------------- setup
 
 async function setup(selfUrl: string) {
@@ -328,7 +422,22 @@ async function setup(selfUrl: string) {
     delaySendMessagesMilliseconds: 15000,
   });
   const chat = await managerChat();
-  if (chat) await notifyManager("✅ Бот LOTOS подключён. Сюда будут приходить заявки.");
+  if (TG_TOKEN) {
+    const tgUrl = selfUrl + "&action=tg";
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/setWebhook`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: tgUrl, allowed_updates: ["message"] }),
+    });
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/setMyCommands`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commands: [
+        { command: "stats", description: "Статистика рассылки" },
+        { command: "pause", description: "Остановить рассылку" },
+        { command: "resume", description: "Продолжить рассылку" },
+      ] }),
+    });
+  }
+  if (chat) await notifyManager("✅ Бот LOTOS подключён. Сюда будут приходить заявки.\n\nКоманды: /stats, /pause, /resume");
   return { green: r, telegram_manager_chat: chat ? "found" : "not found — press Start in the Telegram bot and run setup again" };
 }
 
@@ -346,6 +455,17 @@ Deno.serve(async (req) => {
       // answer pg_net right away, do the work in the background
       // @ts-ignore EdgeRuntime is provided by Supabase
       EdgeRuntime.waitUntil(tick().then((r) => log(null, "tick", r)).catch((e) => log(null, "error", String(e))));
+      return new Response("ok");
+    }
+    if (action === "report") {
+      const st = await waState();
+      await notifyManager(await statsText(url.searchParams.get("title") ?? "📊 Отчёт LOTOS"));
+      return new Response(st);
+    }
+    if (action === "tg") {
+      const upd = await req.json().catch(() => ({}));
+      // @ts-ignore
+      EdgeRuntime.waitUntil(telegram(upd).catch((e) => log(null, "error", "tg: " + String(e))));
       return new Response("ok");
     }
     if (action === "setup") {
