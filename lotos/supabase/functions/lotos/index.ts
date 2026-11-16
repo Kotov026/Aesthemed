@@ -21,16 +21,18 @@ const db = createClient(
 );
 
 // Credentials: Edge Function secrets, or the same names in the private `settings` table.
-let GREEN_URL = "", GREEN_ID = "", GREEN_TOKEN = "", TG_TOKEN = "";
+let GREEN_URL = "", GREEN_ID = "", GREEN_TOKEN = "", TG_TOKEN = "", OPENAI_KEY = "", OPENAI_MODEL = "";
 async function loadConfig() {
   const { data } = await db.from("settings").select("key,value")
-    .in("key", ["GREEN_API_URL", "GREEN_ID", "GREEN_TOKEN", "TG_BOT_TOKEN"]);
+    .in("key", ["GREEN_API_URL", "GREEN_ID", "GREEN_TOKEN", "TG_BOT_TOKEN", "OPENAI_API_KEY", "OPENAI_MODEL"]);
   const s = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
   const get = (k: string) => (Deno.env.get(k) || s[k] || "").trim();
   GREEN_URL = get("GREEN_API_URL").replace(/\/$/, "");
   GREEN_ID = get("GREEN_ID");
   GREEN_TOKEN = get("GREEN_TOKEN");
   TG_TOKEN = get("TG_BOT_TOKEN");
+  OPENAI_KEY = get("OPENAI_API_KEY");
+  OPENAI_MODEL = get("OPENAI_MODEL") || "gpt-4o-mini";
 }
 
 // ---------------------------------------------------------------- campaign dates
@@ -271,6 +273,145 @@ async function tick() {
   }
 }
 
+// ---------------------------------------------------------------- AI conversation (OpenAI)
+//
+// settings.ai_mode: "off" (default) | "test" (only phones in settings.ai_test_phones) | "on" (everyone)
+// The model only classifies the message and writes a short reply; all actions (posters,
+// lead, hand-off to the manager) are done by this code. If OpenAI fails, the old
+// number-based logic is used.
+
+async function aiEnabledFor(phone: string): Promise<boolean> {
+  if (!OPENAI_KEY) return false;
+  const mode = (await setting("ai_mode")) ?? "off";
+  if (mode === "on") return true;
+  if (mode === "test") return ((await setting("ai_test_phones")) ?? "").split(/[\s,]+/).includes(phone);
+  return false;
+}
+
+function aiSystemPrompt(): string {
+  const cities = almatyOpen() ? "Алматы — 25 ноября; Шымкент — 30 ноября" : "Шымкент — 30 ноября (семинар в Алматы уже прошёл)";
+  return `Ты — вежливый помощник LOTOS United в WhatsApp. Ты записываешь косметологов на семинар.
+Отвечай коротко (1–3 предложения), тепло и по-человечески, на языке клиента (русский или казахский).
+Используй ТОЛЬКО факты ниже. Ничего не придумывай. Если ответа нет в фактах — передай менеджеру.
+
+ФАКТЫ О СЕМИНАРЕ:
+- Практический семинар для косметологов «Современные препараты в арсенале косметолога».
+- Филлеры, PLLA, PDRN, экзосомы — особенности, преимущества, показания и гибридные протоколы применения.
+- Программа: теоретическая часть с разбором новой продукции LOTOS United; особенности и преимущества современных препаратов; показания и подбор оптимальных решений; проверенные протоколы и техники работы; гибридные протоколы и сочетание методик.
+- Спикер: Рустанбекова Ирина Анатольевна — врач-дерматокосметолог, магистр медицины, руководитель клиники FaceTime (Астана), сертифицированный тренер LOTOS.
+- Города и даты: ${cities}.
+- Стоимость: 20 000 ₸. Количество мест ограничено.
+- Оплату, точное место и время, сертификаты, требования к образованию, скидки, рассрочку и всё остальное — уточняет менеджер.
+
+ЧТО НУЖНО ВЕРНУТЬ — строго JSON:
+{"intent": "...", "city": "...", "reply": "..."}
+intent:
+- "details" — человек хочет узнать подробнее / программу / афишу (reply пустой, бот сам пришлёт описание);
+- "signup" — хочет записаться/участвовать. Если город уже понятен из переписки, укажи его в "city" ("Алматы", "Шымкент" или другой город как написал клиент). Если город неизвестен — city пустой, а в reply вежливо спроси город;
+- "answer" — простой вопрос, на который есть ответ в фактах: ответь в reply и в конце предложи записаться;
+- "handoff" — вопрос про образование, сертификат, оплату, место/время, скидки, индивидуальная ситуация, жалоба, непонятное сообщение или ответа нет в фактах. В reply напиши, что менеджер скоро ответит лично;
+- "stop" — человек просит больше не писать / не интересно.
+Если клиент сообщает только город после вопроса о городе — это "signup" с этим городом.`;
+}
+
+async function aiDecide(phone: string, text: string, status: string): Promise<{ intent: string; city?: string; reply?: string } | null> {
+  const { data: hist } = await db.from("log").select("direction,text").eq("phone", phone)
+    .in("direction", ["in", "out"]).order("id", { ascending: false }).limit(12);
+  const history = (hist ?? []).reverse().slice(0, -1) // last "in" is the current message
+    .map((h) => ({ role: h.direction === "in" ? "user" : "assistant", content: String(h.text).slice(0, 1200) }));
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: aiSystemPrompt() },
+        ...history,
+        { role: "user", content: `[состояние: ${status === "asked_city" ? "бот спросил город" : "обычный диалог"}]\n${text}` },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const j = await res.json();
+  const out = JSON.parse(j.choices?.[0]?.message?.content ?? "{}");
+  return out?.intent ? out : null;
+}
+
+async function sendDetails(phone: string) {
+  for (const p of POSTERS.filter((x) => x.city !== "almaty" || almatyOpen())) {
+    await green("sendFileByUrl", { chatId: `${phone}@c.us`, urlFile: POSTER_BASE + p.file, fileName: p.file, caption: p.caption })
+      .catch((e) => log(phone, "error", "poster: " + String(e)));
+  }
+  const dropAlmaty = (t: string) => almatyOpen() ? t : t.replace(/📍 Алматы — 25 (ноября|қараша)\n/, "");
+  await sendWa(phone, dropAlmaty(DETAILS_RU));
+  await sendWa(phone, dropAlmaty(DETAILS_KZ));
+}
+
+function normCity(city: string): string | null {
+  const c = norm(city);
+  if (almatyOpen() && /алмат|almaty/.test(c)) return "Алматы";
+  if (/шымк|чимк|shymk/.test(c)) return "Шымкент";
+  return null;
+}
+
+// returns true if the AI handled the message
+async function aiHandle(c: any, phone: string, raw: string, upd: Record<string, unknown>, who: any): Promise<boolean> {
+  let d;
+  try {
+    d = await aiDecide(phone, raw, c.status);
+  } catch (e) {
+    await log(phone, "error", "ai: " + String(e));
+    return false;
+  }
+  if (!d) return false;
+  await log(phone, "ai", JSON.stringify(d).slice(0, 500));
+
+  switch (d.intent) {
+    case "details":
+      await db.from("contacts").update(upd).eq("phone", phone);
+      await sendDetails(phone);
+      return true;
+
+    case "stop":
+      await db.from("contacts").update({ ...upd, status: "stop" }).eq("phone", phone);
+      await sendWa(phone, BYE);
+      return true;
+
+    case "signup": {
+      const cityRaw = (d.city ?? "").trim();
+      if (!cityRaw) {
+        await db.from("contacts").update({ ...upd, status: "asked_city" }).eq("phone", phone);
+        await sendWa(phone, d.reply || askCity());
+        return true;
+      }
+      const city = normCity(cityRaw);
+      if (!city) {
+        await db.from("contacts").update({ ...upd, status: "question", city: cityRaw.slice(0, 60) }).eq("phone", phone);
+        await sendWa(phone, OTHER_CITY);
+        await notifyManager(`📍 Другой город — нужен звонок менеджера\n${card({ ...who, city: cityRaw })}\n\nКлиент хочет записаться: «${raw}». Свяжитесь с ним.`);
+        return true;
+      }
+      await db.from("contacts").update({ ...upd, status: "lead", city }).eq("phone", phone);
+      await sendWa(phone, THANKS);
+      await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS (${city === "Алматы" ? "25.11" : "30.11"})\n${card({ ...who, city })}\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
+      return true;
+    }
+
+    case "answer":
+      await db.from("contacts").update(upd).eq("phone", phone);
+      if (d.reply) await sendWa(phone, d.reply);
+      return true;
+
+    default: // handoff
+      await db.from("contacts").update({ ...upd, status: "question" }).eq("phone", phone);
+      await sendWa(phone, d.reply || "Спасибо за вопрос! Менеджер скоро ответит вам лично.\nРақмет! Менеджер жақын арада өзі жауап береді.");
+      await notifyManager(`❓ Вопрос — нужен менеджер (LOTOS)\n${card(who)}\n\n«${raw}»\n\nОтветьте клиенту в WhatsApp.`);
+      return true;
+  }
+}
+
 // ---------------------------------------------------------------- incoming messages
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е").trim();
@@ -305,6 +446,10 @@ async function incoming(body: any) {
     await db.from("contacts").update({ ...upd, status: "stop" }).eq("phone", phone);
     await sendWa(phone, BYE);
     return;
+  }
+
+  if (["new", "sent", "failed", "asked_city"].includes(c.status) && await aiEnabledFor(phone)) {
+    if (await aiHandle(c, phone, raw, upd, who)) return;
   }
 
   switch (c.status) {
