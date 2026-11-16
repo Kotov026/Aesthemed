@@ -181,7 +181,8 @@ async function tick() {
   await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 180_000)));
 
   try {
-    const chk = await green("checkWhatsapp", { phoneNumber: Number(c.phone) });
+    // checkWhatsapp is not available on every Green API plan — if it fails, just try to send
+    const chk = await green("checkWhatsapp", { phoneNumber: Number(c.phone) }).catch(() => ({}));
     if (chk.existsWhatsapp === false) {
       await db.from("contacts").update({ status: "failed", last_text: "no WhatsApp" }).eq("phone", c.phone);
       return `no WhatsApp: ${c.phone}`;
