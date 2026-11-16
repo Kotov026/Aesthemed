@@ -65,7 +65,7 @@ const POSTERS = [
   { file: "poster-shymkent-v2.jpg", caption: "📍 Шымкент — 30 ноября / 30 қараша" },
 ];
 
-const DETAILS = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТОЛОГОВ*
+const DETAILS_RU = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТОЛОГОВ*
 
 📍 Алматы — 25 ноября
 📍 Шымкент — 30 ноября
@@ -87,9 +87,10 @@ const DETAILS = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТО�
 
 Количество мест ограничено!
 
-———
+*2* — Записаться
+*3* — Задать вопрос`;
 
-*КОСМЕТОЛОГТАРҒА АРНАЛҒАН ПРАКТИКАЛЫҚ СЕМИНАР*
+const DETAILS_KZ = `*КОСМЕТОЛОГТАРҒА АРНАЛҒАН ПРАКТИКАЛЫҚ СЕМИНАР*
 
 📍 Алматы — 25 қараша
 📍 Шымкент — 30 қараша
@@ -111,10 +112,8 @@ const DETAILS = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТО�
 
 Орын саны шектеулі!
 
-———
-
-*2* — Записаться / Жазылу
-*3* — Задать вопрос / Сұрақ қою`;
+*2* — Жазылу
+*3* — Сұрақ қою`;
 
 const ASK_CITY = `Отлично! Напишите, в каком городе будете участвовать: *Алматы* (25.11) или *Шымкент* (30.11)?
 
@@ -299,7 +298,8 @@ async function incoming(body: any) {
           await green("sendFileByUrl", { chatId: `${phone}@c.us`, urlFile: POSTER_BASE + p.file, fileName: p.file, caption: p.caption })
             .catch((e) => log(phone, "error", "poster: " + String(e)));
         }
-        await sendWa(phone, DETAILS);
+        await sendWa(phone, DETAILS_RU);
+        await sendWa(phone, DETAILS_KZ);
       } else if (isYes(t)) {
         await db.from("contacts").update({ ...upd, status: "asked_city" }).eq("phone", phone);
         await sendWa(phone, ASK_CITY);
