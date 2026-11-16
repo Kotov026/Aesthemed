@@ -33,6 +33,14 @@ async function loadConfig() {
   TG_TOKEN = get("TG_BOT_TOKEN");
 }
 
+// ---------------------------------------------------------------- campaign dates
+
+// Almaty seminar is on 25.11 — from 25.11 00:00 Almaty time it disappears from all texts.
+const ALMATY_CLOSES = Date.parse("2026-11-24T19:00:00Z");
+// The whole campaign stops on 29.11 at 19:00 Almaty time.
+const CAMPAIGN_ENDS = Date.parse("2026-11-29T14:00:00Z");
+const almatyOpen = () => Date.now() < ALMATY_CLOSES;
+
 // ---------------------------------------------------------------- texts
 
 const GREETINGS = ["Здравствуйте!", "Добрый день!", "Приветствуем!"];
@@ -42,7 +50,7 @@ const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 function inviteText(): string {
   return `${pick(GREETINGS)} 🌸
 *LOTOS United* приглашает косметологов на практический семинар *«Современные препараты в арсенале косметолога»*
-📍 Алматы — 25 ноября · Шымкент — 30 ноября
+${almatyOpen() ? "📍 Алматы — 25 ноября · Шымкент — 30 ноября" : "📍 Шымкент — 30 ноября"}
 
 *1* — Подробнее
 *2* — Записаться
@@ -51,7 +59,7 @@ function inviteText(): string {
 
 ${pick(GREETINGS_KZ)} 🌸
 *LOTOS United* косметологтарды *«Косметолог арсеналындағы заманауи препараттар»* практикалық семинарына шақырады
-📍 Алматы — 25 қараша · Шымкент — 30 қараша
+${almatyOpen() ? "📍 Алматы — 25 қараша · Шымкент — 30 қараша" : "📍 Шымкент — 30 қараша"}
 
 *1* — Толығырақ
 *2* — Жазылу
@@ -61,8 +69,8 @@ ${pick(GREETINGS_KZ)} 🌸
 
 const POSTER_BASE = "https://raw.githubusercontent.com/Kotov026/Aesthemed/claude/laughing-fermat-8qvjuv/lotos/assets/";
 const POSTERS = [
-  { file: "poster-almaty-v3.jpg", caption: "📍 Алматы — 25 ноября / 25 қараша" },
-  { file: "poster-shymkent-v2.jpg", caption: "📍 Шымкент — 30 ноября / 30 қараша" },
+  { city: "almaty", file: "poster-almaty-v3.jpg", caption: "📍 Алматы — 25 ноября / 25 қараша" },
+  { city: "shymkent", file: "poster-shymkent-v2.jpg", caption: "📍 Шымкент — 30 ноября / 30 қараша" },
 ];
 
 const DETAILS_RU = `*ПРАКТИЧЕСКИЙ СЕМИНАР ДЛЯ КОСМЕТОЛОГОВ*
@@ -115,9 +123,17 @@ const DETAILS_KZ = `*КОСМЕТОЛОГТАРҒА АРНАЛҒАН ПРАКТ�
 *2* — Жазылу
 *3* — Сұрақ қою`;
 
-const ASK_CITY = `Отлично! Напишите, в каком городе будете участвовать: *Алматы* (25.11) или *Шымкент* (30.11)?
+const askCity = () => almatyOpen()
+  ? `Отлично! Напишите, в каком городе будете участвовать: *Алматы* (25.11) или *Шымкент* (30.11)?
 
-Тамаша! Қай қалада қатысасыз: *Алматы* (25.11) әлде *Шымкент* (30.11)?`;
+Тамаша! Қай қалада қатысасыз: *Алматы* (25.11) әлде *Шымкент* (30.11)?`
+  : `Отлично! Семинар пройдёт в *Шымкенте* 30 ноября. Напишите, пожалуйста, ваш город.
+
+Тамаша! Семинар 30 қарашада *Шымкентте* өтеді. Қалаңызды жазыңыз.`;
+
+const OTHER_CITY = `Спасибо! Менеджер свяжется с вами и всё подробно расскажет.
+
+Рақмет! Менеджер сізбен хабарласып, бәрін толық айтып береді.`;
 
 const THANKS = `Спасибо, вы в списке участников ✅
 Менеджер свяжется с вами в ближайшее время для подтверждения и оплаты.
@@ -202,6 +218,7 @@ function almatyNow() {
 // ---------------------------------------------------------------- broadcast tick
 
 async function tick() {
+  if (Date.now() >= CAMPAIGN_ENDS) return "campaign finished";
   if ((await setting("paused")) === "true") return "paused";
   const { hour, midnightUtc } = almatyNow();
   const from = Number(await setting("send_from_hour") ?? 10);
@@ -214,7 +231,9 @@ async function tick() {
   if ((count ?? 0) >= limit) return `daily limit ${limit} reached`;
 
   // keep a minimum gap between invites (cron fires more often than we send)
-  const gap = Number(await setting("min_gap_minutes") ?? 11);
+  // spread the daily limit over the sending window
+  const autoGap = ((to - from) * 60 / Math.max(1, limit)) * 0.85;
+  const gap = Math.min(Number(await setting("min_gap_minutes") ?? 11), autoGap);
   const { data: last } = await db.from("contacts").select("sent_at").not("sent_at", "is", null)
     .order("sent_at", { ascending: false }).limit(1).maybeSingle();
   if (last?.sent_at && Date.now() - new Date(last.sent_at).getTime() < gap * 60_000) return "waiting for gap";
@@ -294,15 +313,16 @@ async function incoming(body: any) {
     case "failed":
       if (isDetails(t)) {
         await db.from("contacts").update(upd).eq("phone", phone);
-        for (const p of POSTERS) {
+        for (const p of POSTERS.filter((x) => x.city !== "almaty" || almatyOpen())) {
           await green("sendFileByUrl", { chatId: `${phone}@c.us`, urlFile: POSTER_BASE + p.file, fileName: p.file, caption: p.caption })
             .catch((e) => log(phone, "error", "poster: " + String(e)));
         }
-        await sendWa(phone, DETAILS_RU);
-        await sendWa(phone, DETAILS_KZ);
+        const dropAlmaty = (t: string) => almatyOpen() ? t : t.replace(/📍 Алматы — 25 (ноября|қараша)\n/, "");
+        await sendWa(phone, dropAlmaty(DETAILS_RU));
+        await sendWa(phone, dropAlmaty(DETAILS_KZ));
       } else if (isYes(t)) {
         await db.from("contacts").update({ ...upd, status: "asked_city" }).eq("phone", phone);
-        await sendWa(phone, ASK_CITY);
+        await sendWa(phone, askCity());
       } else if (isQuestion(t)) {
         await db.from("contacts").update({ ...upd, status: "question" }).eq("phone", phone);
         await sendWa(phone, ASK_QUESTION);
@@ -318,13 +338,19 @@ async function incoming(body: any) {
       return;
 
     case "asked_city": {
-      let city: string;
-      if (/^1(\D|$)|алмат/.test(t)) city = "Алматы";
-      else if (/^2(\D|$)|шымк|чимк/.test(t)) city = "Шымкент";
-      else city = raw.slice(0, 60);
+      let city: string | null = null;
+      if (almatyOpen() && /^1(\D|$)|алмат/.test(t)) city = "Алматы";
+      else if (/^2(\D|$)|шымк|чимк/.test(t) || (!almatyOpen() && /^1(\D|$)/.test(t))) city = "Шымкент";
+      if (!city) {
+        // another city (or Almaty after the 24th): hand over to the manager
+        await db.from("contacts").update({ ...upd, status: "question", city: raw.slice(0, 60) }).eq("phone", phone);
+        await sendWa(phone, OTHER_CITY);
+        await notifyManager(`📍 Другой город — нужен звонок менеджера\n${card({ ...who, city: raw.slice(0, 60) })}\n\nКлиент хочет записаться, но указал: «${raw}». Свяжитесь с ним.`);
+        return;
+      }
       await db.from("contacts").update({ ...upd, status: "lead", city }).eq("phone", phone);
       await sendWa(phone, THANKS);
-      const date = city === "Алматы" ? " (25.11)" : city === "Шымкент" ? " (30.11)" : "";
+      const date = city === "Алматы" ? " (25.11)" : " (30.11)";
       await notifyManager(`🆕 ЗАЯВКА — семинар LOTOS${date}\n${card({ ...who, city })}\n\nСвяжитесь для подтверждения и оплаты 20 000 ₸.`);
       return;
     }
