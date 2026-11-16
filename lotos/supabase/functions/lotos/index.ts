@@ -444,7 +444,7 @@ async function incoming(body: any) {
   const name: string | null = body.senderData?.senderName || body.senderData?.chatName || null;
   const md = body.messageData ?? {};
   let raw: string = md.textMessageData?.textMessage ?? md.extendedTextMessageData?.text ??
-    md.fileMessageData?.caption ?? `[${md.typeMessage ?? "сообщение"}]`;
+    md.fileMessageData?.caption || `[${md.typeMessage ?? "сообщение"}]`;
   // voice message -> text (OpenAI speech-to-text), then handled like a normal message
   if (md.typeMessage === "audioMessage" && md.fileMessageData?.downloadUrl && OPENAI_KEY) {
     const text = await transcribe(md.fileMessageData.downloadUrl).catch(async (e) => {
@@ -469,6 +469,13 @@ async function incoming(body: any) {
   if (isStop(t) && c.status !== "lead") {
     await db.from("contacts").update({ ...upd, status: "stop" }).eq("phone", phone);
     await sendWa(phone, BYE);
+    return;
+  }
+
+  // stickers, photos, unrecognised voice etc. — nothing for the AI to read
+  if (/^\[\w+\]$/.test(raw)) {
+    await db.from("contacts").update(upd).eq("phone", phone);
+    await notifyManager(`📎 Клиент LOTOS прислал не текст (${raw})\n${card(who)}\n\nПосмотрите в WhatsApp.`);
     return;
   }
 
