@@ -412,6 +412,22 @@ async function aiHandle(c: any, phone: string, raw: string, upd: Record<string, 
   }
 }
 
+async function transcribe(url: string): Promise<string> {
+  const audio = await fetch(url);
+  if (!audio.ok) throw new Error(`download ${audio.status}`);
+  const form = new FormData();
+  form.append("file", new Blob([await audio.arrayBuffer()], { type: "audio/ogg" }), "voice.ogg");
+  form.append("model", "whisper-1");
+  form.append("prompt", "Семинар LOTOS для косметологов. Алматы, Шымкент. Филлеры, PLLA, PDRN, экзосомы.");
+  const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${OPENAI_KEY}` },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`OpenAI STT ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return String((await res.json()).text ?? "").trim();
+}
+
 // ---------------------------------------------------------------- incoming messages
 
 const norm = (s: string) => s.toLowerCase().replace(/ё/g, "е").trim();
@@ -427,9 +443,17 @@ async function incoming(body: any) {
   const phone = chatId.replace("@c.us", "");
   const name: string | null = body.senderData?.senderName || body.senderData?.chatName || null;
   const md = body.messageData ?? {};
-  const raw: string = md.textMessageData?.textMessage ?? md.extendedTextMessageData?.text ??
+  let raw: string = md.textMessageData?.textMessage ?? md.extendedTextMessageData?.text ??
     md.fileMessageData?.caption ?? `[${md.typeMessage ?? "сообщение"}]`;
-  const t = norm(raw);
+  // voice message -> text (OpenAI speech-to-text), then handled like a normal message
+  if (md.typeMessage === "audioMessage" && md.fileMessageData?.downloadUrl && OPENAI_KEY) {
+    const text = await transcribe(md.fileMessageData.downloadUrl).catch(async (e) => {
+      await log(phone, "error", "voice: " + String(e));
+      return "";
+    });
+    if (text) raw = "🎤 " + text;
+  }
+  const t = norm(raw.replace(/^🎤 /, ""));
   await log(phone, "in", raw);
 
   let { data: c } = await db.from("contacts").select("*").eq("phone", phone).maybeSingle();
