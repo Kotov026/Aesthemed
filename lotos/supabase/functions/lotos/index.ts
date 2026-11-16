@@ -203,12 +203,19 @@ async function tick() {
     .gte("sent_at", midnightUtc.toISOString());
   if ((count ?? 0) >= limit) return `daily limit ${limit} reached`;
 
+  // keep a minimum gap between invites (cron fires more often than we send)
+  const gap = Number(await setting("min_gap_minutes") ?? 11);
+  const { data: last } = await db.from("contacts").select("sent_at").not("sent_at", "is", null)
+    .order("sent_at", { ascending: false }).limit(1).maybeSingle();
+  if (last?.sent_at && Date.now() - new Date(last.sent_at).getTime() < gap * 60_000) return "waiting for gap";
+
   const { data: c } = await db.from("contacts").select("*").eq("status", "new")
     .order("created_at").limit(1).maybeSingle();
   if (!c) return "no contacts left";
 
-  // random pause 0–3 min so messages do not go out on an exact schedule
-  await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 180_000)));
+  // random pause 0–60 s so messages do not go out on an exact schedule
+  // (must stay well under the edge function wall-clock limit)
+  await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 60_000)));
 
   try {
     // checkWhatsapp is not available on every Green API plan — if it fails, just try to send
